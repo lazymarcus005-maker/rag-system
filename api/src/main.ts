@@ -11,6 +11,7 @@ async function bootstrap() {
   app.use(cookieParser());
   app.enableCors({ origin: true, credentials: true });
   app.useGlobalPipes(new ValidationPipe({ whitelist: true, transform: true }));
+  app.enableShutdownHooks();
 
   if (process.env.NODE_ENV !== 'production' || process.env.ENABLE_DOCS === 'true') {
     const config = new DocumentBuilder()
