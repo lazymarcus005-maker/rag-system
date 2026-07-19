@@ -1,23 +1,16 @@
 export const API_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
-export function getToken(): string | null {
-  if (typeof window === 'undefined') return null;
-  return localStorage.getItem('token');
-}
-
 export function getUser(): { id: string; email: string; role: string } | null {
   if (typeof window === 'undefined') return null;
   const raw = localStorage.getItem('user');
   return raw ? JSON.parse(raw) : null;
 }
 
-export function setSession(accessToken: string, user: unknown) {
-  localStorage.setItem('token', accessToken);
+export function setSession(user: unknown) {
   localStorage.setItem('user', JSON.stringify(user));
 }
 
 export function clearSession() {
-  localStorage.removeItem('token');
   localStorage.removeItem('user');
 }
 
@@ -29,19 +22,16 @@ async function tryRefresh(): Promise<boolean> {
     });
     if (!res.ok) return false;
     const data = await res.json();
-    setSession(data.accessToken, data.user);
+    if (data.user) setSession(data.user);
     return true;
   } catch {
     return false;
   }
 }
 
-// fetch พร้อมแนบ token + refresh อัตโนมัติเมื่อ access token หมดอายุ
 export async function authFetch(path: string, init: RequestInit = {}): Promise<Response> {
   const doFetch = () => {
     const headers = new Headers(init.headers);
-    const token = getToken();
-    if (token) headers.set('Authorization', `Bearer ${token}`);
     if (init.body && !(init.body instanceof FormData)) {
       headers.set('Content-Type', 'application/json');
     }

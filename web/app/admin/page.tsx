@@ -2,7 +2,7 @@
 
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { api, getToken, getUser } from '@/lib/api';
+import { api, getUser } from '@/lib/api';
 
 interface Doc {
   id: string;
@@ -34,7 +34,7 @@ export default function AdminPage() {
   }, []);
 
   useEffect(() => {
-    if (!getToken() || getUser()?.role !== 'admin') {
+    if (getUser()?.role !== 'admin') {
       router.push('/login');
       return;
     }

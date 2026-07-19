@@ -17,11 +17,11 @@ export default function LoginPage() {
     setError('');
     setLoading(true);
     try {
-      const data = await api<{ accessToken: string; user: { role: string } }>(
+      const data = await api<{ user: { role: string } }>(
         `/auth/${mode}`,
         { method: 'POST', body: JSON.stringify({ email, password }) },
       );
-      setSession(data.accessToken, data.user);
+      setSession(data.user);
       router.push(data.user.role === 'admin' ? '/admin' : '/chat');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'เกิดข้อผิดพลาด');

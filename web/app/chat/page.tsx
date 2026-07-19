@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { api, authFetch, getToken, getUser, logout } from '@/lib/api';
+import { api, authFetch, getUser, logout } from '@/lib/api';
 
 interface Conversation {
   id: string;
@@ -38,7 +38,7 @@ export default function ChatPage() {
   const abortRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
-    if (!getToken()) {
+    if (!getUser()) {
       router.push('/login');
       return;
     }
