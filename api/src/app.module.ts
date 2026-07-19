@@ -25,7 +25,7 @@ import { envSchema } from './config/env.schema';
     ConfigModule.forRoot({
       isGlobal: true,
       validationSchema: envSchema,
-      validationOptions: { abortEarly: false, stripUnknown: true },
+      validationOptions: { abortEarly: false },
     }),
     LoggerModule.forRoot({
       pinoHttp: {
