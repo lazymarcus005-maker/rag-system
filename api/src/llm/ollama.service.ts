@@ -1,4 +1,4 @@
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, Logger, OnModuleInit } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 
 export interface ChatMessage {
@@ -7,17 +7,38 @@ export interface ChatMessage {
 }
 
 @Injectable()
-export class OllamaService {
+export class OllamaService implements OnModuleInit {
   private readonly baseUrl: string;
   private readonly apiKey?: string;
   readonly chatModel: string;
   readonly embedModel: string;
+  private readonly embeddingDim: number;
+  private readonly logger = new Logger(OllamaService.name);
 
   constructor(config: ConfigService) {
     this.baseUrl = config.get('OLLAMA_BASE_URL', 'http://localhost:11434');
     this.apiKey = config.get('OLLAMA_API_KEY');
     this.chatModel = config.get('OLLAMA_CHAT_MODEL', 'llama3.1:8b');
     this.embedModel = config.get('OLLAMA_EMBED_MODEL', 'bge-m3');
+    this.embeddingDim = Number(config.get('EMBEDDING_DIM', 1024));
+  }
+
+  async onModuleInit() {
+    try {
+      const [probe] = await this.embed(['dimension check']);
+      if (probe.length !== this.embeddingDim) {
+        throw new Error(
+          `Embedding dimension mismatch: EMBEDDING_DIM=${this.embeddingDim} but Ollama model "${this.embedModel}" returned ${probe.length}-dim vectors. Update EMBEDDING_DIM to match the model.`,
+        );
+      }
+    } catch (err) {
+      if (err instanceof Error && err.message.includes('Embedding dimension mismatch')) {
+        throw err;
+      }
+      this.logger.warn(
+        `Ollama unreachable during startup probe; skipping dimension validation: ${err instanceof Error ? err.message : String(err)}`,
+      );
+    }
   }
 
   private headers(): Record<string, string> {
