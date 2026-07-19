@@ -20,7 +20,7 @@ class ChatDto {
   @IsString()
   @IsNotEmpty()
   @MaxLength(4000)
-  content: string;
+  content!: string;
 }
 
 @Controller('conversations')

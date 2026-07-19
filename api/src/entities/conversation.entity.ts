@@ -3,14 +3,14 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeor
 @Entity('conversations')
 export class Conversation {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ name: 'user_id', type: 'uuid' })
-  userId: string;
+  userId!: string;
 
   @Column({ default: 'New chat' })
-  title: string;
+  title!: string;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 }

@@ -9,11 +9,11 @@ const REFRESH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
 
 class CredentialsDto {
   @IsEmail()
-  email: string;
+  email!: string;
 
   @IsString()
   @MinLength(8)
-  password: string;
+  password!: string;
 }
 
 @Controller('auth')

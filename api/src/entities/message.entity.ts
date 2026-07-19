@@ -3,20 +3,20 @@ import { Column, CreateDateColumn, Entity, PrimaryGeneratedColumn } from 'typeor
 @Entity('messages')
 export class Message {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ name: 'conversation_id', type: 'uuid' })
-  conversationId: string;
+  conversationId!: string;
 
   @Column()
-  role: 'user' | 'assistant';
+  role!: 'user' | 'assistant';
 
   @Column({ type: 'text' })
-  content: string;
+  content!: string;
 
   @Column({ name: 'cited_chunk_ids', type: 'jsonb', nullable: true })
-  citedChunkIds: string[] | null;
+  citedChunkIds!: string[] | null;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 }

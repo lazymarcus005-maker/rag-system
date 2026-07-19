@@ -11,44 +11,44 @@ export type DocumentStatus = 'pending' | 'processing' | 'ready' | 'failed';
 @Entity('documents')
 export class DocumentEntity {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column()
-  title: string;
+  title!: string;
 
   @Column()
-  filename: string;
+  filename!: string;
 
   @Column({ name: 'mime_type' })
-  mimeType: string;
+  mimeType!: string;
 
   @Column({ name: 'size_bytes', type: 'bigint' })
-  sizeBytes: number;
+  sizeBytes!: number;
 
   @Column({ name: 'storage_path' })
-  storagePath: string;
+  storagePath!: string;
 
   @Column({ default: 'pending' })
-  status: DocumentStatus;
+  status!: DocumentStatus;
 
   @Column({ type: 'text', nullable: true })
-  error: string | null;
+  error!: string | null;
 
   @Column({ name: 'chunk_count', default: 0 })
-  chunkCount: number;
+  chunkCount!: number;
 
   @Column({ default: 0 })
-  progress: number;
+  progress!: number;
 
   @Column({ name: 'content_hash', type: 'varchar', nullable: true })
-  contentHash: string | null;
+  contentHash!: string | null;
 
   @Column({ name: 'uploaded_by', type: 'uuid', nullable: true })
-  uploadedBy: string | null;
+  uploadedBy!: string | null;
 
   @CreateDateColumn({ name: 'created_at' })
-  createdAt: Date;
+  createdAt!: Date;
 
   @UpdateDateColumn({ name: 'updated_at' })
-  updatedAt: Date;
+  updatedAt!: Date;
 }

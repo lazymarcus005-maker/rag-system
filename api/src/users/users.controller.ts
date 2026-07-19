@@ -21,7 +21,7 @@ import { User } from '../entities/user.entity';
 
 class RoleDto {
   @IsIn(['admin', 'user'])
-  role: 'admin' | 'user';
+  role!: 'admin' | 'user';
 }
 
 @Controller('users')
