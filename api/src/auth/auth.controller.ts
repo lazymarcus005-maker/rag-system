@@ -6,6 +6,8 @@ import { AuthResult, AuthService } from './auth.service';
 
 const REFRESH_COOKIE = 'refresh_token';
 const REFRESH_COOKIE_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
+const ACCESS_COOKIE = 'access_token';
+const ACCESS_COOKIE_MAX_AGE = 15 * 60 * 1000;
 
 class CredentialsDto {
   @IsEmail()
@@ -45,11 +47,19 @@ export class AuthController {
   @Post('logout')
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
     const result = await this.auth.logout(req.cookies?.[REFRESH_COOKIE]);
+    res.clearCookie(ACCESS_COOKIE, { path: '/' });
     res.clearCookie(REFRESH_COOKIE, { path: '/auth' });
     return result;
   }
 
   private respond(res: Response, result: AuthResult) {
+    res.cookie(ACCESS_COOKIE, result.accessToken, {
+      httpOnly: true,
+      sameSite: 'lax',
+      secure: process.env.NODE_ENV === 'production',
+      path: '/',
+      maxAge: ACCESS_COOKIE_MAX_AGE,
+    });
     res.cookie(REFRESH_COOKIE, result.refreshToken, {
       httpOnly: true,
       sameSite: 'lax',
@@ -57,6 +67,6 @@ export class AuthController {
       path: '/auth',
       maxAge: REFRESH_COOKIE_MAX_AGE,
     });
-    return { accessToken: result.accessToken, user: result.user };
+    return { user: result.user };
   }
 }
