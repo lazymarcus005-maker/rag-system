@@ -6,6 +6,7 @@ import {
   Param,
   ParseUUIDPipe,
   Post,
+  Query,
   Req,
   UploadedFile,
   UseGuards,
@@ -48,8 +49,11 @@ export class DocumentsController {
   }
 
   @Get()
-  findAll() {
-    return this.documents.findAll();
+  findAll(@Query('limit') limit?: string, @Query('offset') offset?: string) {
+    return this.documents.findAll(
+      limit ? Number(limit) : undefined,
+      offset ? Number(offset) : undefined,
+    );
   }
 
   @Post(':id/reindex')

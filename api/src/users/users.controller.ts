@@ -8,6 +8,7 @@ import {
   Param,
   ParseUUIDPipe,
   Patch,
+  Query,
   Req,
   UseGuards,
 } from '@nestjs/common';
@@ -30,10 +31,14 @@ export class UsersController {
   constructor(@InjectRepository(User) private readonly users: Repository<User>) {}
 
   @Get()
-  findAll() {
+  findAll(@Query('limit') limit?: string, @Query('offset') offset?: string) {
+    const take = Math.min(limit ? Number(limit) : 100, 100);
+    const skip = Math.max(offset ? Number(offset) : 0, 0);
     return this.users.find({
       select: ['id', 'email', 'role', 'createdAt'],
       order: { createdAt: 'ASC' },
+      take,
+      skip,
     });
   }
 

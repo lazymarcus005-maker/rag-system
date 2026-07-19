@@ -56,8 +56,10 @@ export class DocumentsService {
     return doc;
   }
 
-  findAll() {
-    return this.documents.find({ order: { createdAt: 'DESC' } });
+  findAll(limit = 100, offset = 0) {
+    const take = Math.min(limit, 100);
+    const skip = Math.max(offset, 0);
+    return this.documents.find({ order: { createdAt: 'DESC' }, take, skip });
   }
 
   async reindex(id: string) {

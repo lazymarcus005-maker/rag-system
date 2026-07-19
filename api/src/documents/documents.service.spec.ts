@@ -28,7 +28,7 @@ function makeService() {
       }
       return store.get(w.id) ?? null;
     }),
-    find: jest.fn(async () => Array.from(store.values())),
+    find: jest.fn(async (opts?: any) => Array.from(store.values())),
     update: jest.fn(async () => undefined),
     delete: jest.fn(async (id: string) => {
       store.delete(id);
@@ -109,5 +109,35 @@ describe('DocumentsService', () => {
     await service.remove(doc.id);
     expect(documents.delete).toHaveBeenCalledWith(doc.id);
     await expect(fs.access(file.path)).rejects.toBeDefined();
+  });
+
+  it('findAll applies limit and offset with defaults 100/0', async () => {
+    const { service, documents } = makeService();
+    await service.findAll();
+    expect(documents.find).toHaveBeenCalledWith({
+      order: { createdAt: 'DESC' },
+      take: 100,
+      skip: 0,
+    });
+  });
+
+  it('findAll caps limit at 100', async () => {
+    const { service, documents } = makeService();
+    await service.findAll(5000, 10);
+    expect(documents.find).toHaveBeenCalledWith({
+      order: { createdAt: 'DESC' },
+      take: 100,
+      skip: 10,
+    });
+  });
+
+  it('findAll honors a valid limit under 100', async () => {
+    const { service, documents } = makeService();
+    await service.findAll(20, 40);
+    expect(documents.find).toHaveBeenCalledWith({
+      order: { createdAt: 'DESC' },
+      take: 20,
+      skip: 40,
+    });
   });
 });
