@@ -18,10 +18,15 @@ import { ChunkMetadataDedup1700000000002 } from './migrations/1700000000002-chun
 import { RefreshTokens1700000000003 } from './migrations/1700000000003-refresh-tokens';
 import { RetrievalModule } from './retrieval/retrieval.module';
 import { UsersModule } from './users/users.module';
+import { envSchema } from './config/env.schema';
 
 @Module({
   imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({
+      isGlobal: true,
+      validationSchema: envSchema,
+      validationOptions: { abortEarly: false, stripUnknown: true },
+    }),
     LoggerModule.forRoot({
       pinoHttp: {
         genReqId: () => randomUUID(),
@@ -51,6 +56,9 @@ import { UsersModule } from './users/users.module';
           RefreshTokens1700000000003,
         ],
         migrationsRun: true,
+        retryAttempts: 5,
+        retryDelay: 5000,
+        keepConnectionAlive: true,
       }),
     }),
     BullModule.forRootAsync({
