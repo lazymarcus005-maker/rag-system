@@ -6,6 +6,15 @@ export interface ChatMessage {
   content: string;
 }
 
+export class DimensionMismatchError extends Error {
+  constructor(expected: number, actual: number, model: string) {
+    super(
+      `Embedding dimension mismatch: EMBEDDING_DIM=${expected} but Ollama model "${model}" returned ${actual}-dim vectors. Update EMBEDDING_DIM to match the model.`,
+    );
+    this.name = 'DimensionMismatchError';
+  }
+}
+
 @Injectable()
 export class OllamaService implements OnModuleInit {
   private readonly baseUrl: string;
@@ -27,12 +36,10 @@ export class OllamaService implements OnModuleInit {
     try {
       const [probe] = await this.embed(['dimension check']);
       if (probe.length !== this.embeddingDim) {
-        throw new Error(
-          `Embedding dimension mismatch: EMBEDDING_DIM=${this.embeddingDim} but Ollama model "${this.embedModel}" returned ${probe.length}-dim vectors. Update EMBEDDING_DIM to match the model.`,
-        );
+        throw new DimensionMismatchError(this.embeddingDim, probe.length, this.embedModel);
       }
     } catch (err) {
-      if (err instanceof Error && err.message.includes('Embedding dimension mismatch')) {
+      if (err instanceof DimensionMismatchError) {
         throw err;
       }
       this.logger.warn(
