@@ -18,6 +18,7 @@ import { Repository } from 'typeorm';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles, RolesGuard } from '../auth/roles';
 import { User } from '../entities/user.entity';
+import { parsePagination } from '../documents/pagination';
 
 class RoleDto {
   @IsIn(['admin', 'user'])
@@ -32,8 +33,7 @@ export class UsersController {
 
   @Get()
   findAll(@Query('limit') limit?: string, @Query('offset') offset?: string) {
-    const take = Math.min(limit ? Number(limit) : 100, 100);
-    const skip = Math.max(offset ? Number(offset) : 0, 0);
+    const { limit: take, offset: skip } = parsePagination(limit, offset);
     return this.users.find({
       select: ['id', 'email', 'role', 'createdAt'],
       order: { createdAt: 'ASC' },

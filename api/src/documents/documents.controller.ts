@@ -19,6 +19,7 @@ import { randomUUID } from 'crypto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { Roles, RolesGuard } from '../auth/roles';
 import { DocumentsService } from './documents.service';
+import { parsePagination } from './pagination';
 
 const ALLOWED_EXTENSIONS = ['.pdf', '.docx', '.md', '.txt'];
 
@@ -50,10 +51,8 @@ export class DocumentsController {
 
   @Get()
   findAll(@Query('limit') limit?: string, @Query('offset') offset?: string) {
-    return this.documents.findAll(
-      limit ? Number(limit) : undefined,
-      offset ? Number(offset) : undefined,
-    );
+    const { limit: take, offset: skip } = parsePagination(limit, offset);
+    return this.documents.findAll(take, skip);
   }
 
   @Post(':id/reindex')
