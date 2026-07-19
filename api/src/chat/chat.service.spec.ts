@@ -1,5 +1,7 @@
 import { NotFoundException } from '@nestjs/common';
 import { EventEmitter } from 'events';
+import { Conversation } from '../entities/conversation.entity';
+import { Message } from '../entities/message.entity';
 import { ChatService } from './chat.service';
 
 function makeMocks(convo: any) {
@@ -28,7 +30,21 @@ function makeMocks(convo: any) {
     chat: jest.fn(async () => ''),
     chatStream: jest.fn(),
   };
-  return { conversations, messages, retrieval, ollama, savedMessages };
+  const manager = {
+    save: jest.fn(async (entity: any, data: any) => {
+      if (entity === Message || (typeof entity === 'function' && entity.name === 'Message')) {
+        const saved = { id: `m${savedMessages.length + 1}`, ...data };
+        savedMessages.push(saved);
+        return saved;
+      }
+      return data;
+    }),
+    update: jest.fn(async () => undefined),
+  };
+  const dataSource = {
+    transaction: jest.fn(async (fn: (mgr: any) => Promise<unknown>) => fn(manager)),
+  };
+  return { conversations, messages, retrieval, ollama, savedMessages, dataSource, manager };
 }
 
 function fakeResponse() {
@@ -63,6 +79,7 @@ describe('ChatService', () => {
     const svc = new ChatService(
       m.conversations as any,
       m.messages as any,
+      m.dataSource as any,
       m.retrieval as any,
       m.ollama as any,
     );
@@ -94,6 +111,7 @@ describe('ChatService', () => {
     const svc = new ChatService(
       m.conversations as any,
       m.messages as any,
+      m.dataSource as any,
       m.retrieval as any,
       m.ollama as any,
     );
@@ -118,6 +136,7 @@ describe('ChatService', () => {
     const svc = new ChatService(
       m.conversations as any,
       m.messages as any,
+      m.dataSource as any,
       m.retrieval as any,
       m.ollama as any,
     );
@@ -137,6 +156,7 @@ describe('ChatService', () => {
     const svc = new ChatService(
       m.conversations as any,
       m.messages as any,
+      m.dataSource as any,
       m.retrieval as any,
       m.ollama as any,
     );
@@ -148,5 +168,27 @@ describe('ChatService', () => {
     expect(err).toBeDefined();
     expect(err.message).toBe('Streaming failed');
     expect(err.message).not.toContain('secret DB details');
+  });
+
+  it('saves the user message and updates the title in one transaction', async () => {
+    const m = makeMocks(convo);
+    m.retrieval.search.mockResolvedValue([]);
+    const svc = new ChatService(
+      m.conversations as any,
+      m.messages as any,
+      m.dataSource as any,
+      m.retrieval as any,
+      m.ollama as any,
+    );
+    const { res } = fakeResponse();
+    await svc.streamAnswer('c1', 'u1', 'first question', res);
+
+    expect(m.dataSource.transaction).toHaveBeenCalledTimes(1);
+    expect(m.manager.save).toHaveBeenCalled();
+    expect(m.manager.update).toHaveBeenCalledWith(
+      Conversation,
+      'c1',
+      { title: 'first question'.slice(0, 80) },
+    );
   });
 });

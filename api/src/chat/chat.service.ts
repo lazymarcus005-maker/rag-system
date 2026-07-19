@@ -1,7 +1,7 @@
 import { Injectable, Logger, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Response } from 'express';
-import { Repository } from 'typeorm';
+import { Repository, DataSource } from 'typeorm';
 import { Conversation } from '../entities/conversation.entity';
 import { Message } from '../entities/message.entity';
 import { ChatMessage, OllamaService } from '../llm/ollama.service';
@@ -24,6 +24,7 @@ export class ChatService {
     @InjectRepository(Conversation)
     private readonly conversations: Repository<Conversation>,
     @InjectRepository(Message) private readonly messages: Repository<Message>,
+    private readonly dataSource: DataSource,
     private readonly retrieval: RetrievalService,
     private readonly ollama: OllamaService,
   ) {}
@@ -110,12 +111,14 @@ ${recent}
       });
       prior.reverse();
 
-      await this.messages.save(
-        this.messages.create({ conversationId, role: 'user', content }),
-      );
-      if (convo.title === 'New chat') {
-        await this.conversations.update(convo.id, { title: content.slice(0, 80) });
-      }
+      await this.dataSource.transaction(async (manager) => {
+        await manager.save(Message, { conversationId, role: 'user', content });
+        if (convo.title === 'New chat') {
+          await manager.update(Conversation, convo.id, {
+            title: content.slice(0, 80),
+          });
+        }
+      });
 
       // ยกเลิก stream จาก Ollama ทันทีเมื่อ client ปิด connection
       const abort = new AbortController();
