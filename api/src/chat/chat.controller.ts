@@ -29,6 +29,7 @@ export class ChatController {
   constructor(private readonly chat: ChatService) {}
 
   @Post()
+  @Throttle({ default: { limit: 20, ttl: 60_000 } })
   create(@Req() req: any) {
     return this.chat.createConversation(req.user.sub);
   }
@@ -49,7 +50,7 @@ export class ChatController {
   }
 
   @Post(':id/chat')
-  @Throttle({ default: { limit: 20, ttl: 60_000 } })
+  @Throttle({ default: { limit: 6, ttl: 60_000 } })
   async stream(
     @Param('id', ParseUUIDPipe) id: string,
     @Body() dto: ChatDto,
